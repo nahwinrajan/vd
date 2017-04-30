@@ -13,6 +13,8 @@ var csrf              = require("csurf");
 var morgan            = require("morgan");
 var methodOverride    = require('method-override');
 var mongoose          = require('mongoose');
+var fs                = require('fs');
+var FileStreamRotator= require('file-stream-rotator');
 
 // routes
 var indexRoutes    = require("./routes/index");
@@ -39,6 +41,18 @@ app.use(expressSanitizer()); //sanitize user's html encoding inputpr
 // db - configuration
 let dbUrl = process.env.MLAB_VD_URL || "mongodb://localhost/vd-test";
 mongoose.connect(dbUrl);
+
+// log - configuration
+fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);  // ensure log directory exists
+// create a rotating write stream
+var accessLogStream = FileStreamRotator.getStream({
+  date_format: 'YYYYMMMDD',
+  filename: path.join(logDirectory, 'access-%DATE%.log'),
+  frequency: 'daily',
+  verbose: false
+});
+// setup the logger
+app.use(morgan('combined', {stream: accessLogStream}))
 
 app.use('/',       indexRoutes);
 app.use('/object', apiRoutes);
