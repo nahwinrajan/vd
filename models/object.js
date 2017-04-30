@@ -5,16 +5,17 @@ var objectSchema = mongoose.Schema({
     type: String,
     index: true,
     required: true,
-    maxLength: 250, //limit possible edge case
-    minLength: 1
+    maxlength: 250, //limit possible edge case
+    minlength: 1
   },
   objValue: {
     type: String,
-    maxLength: 500, //limit possible edge case
+    maxlength: 500, //limit possible edge case
     required: true
   },
   timestampUTC: {
-    type: Number
+    type: Number,
+    index: true
   }
 }, {
   timestamps: true

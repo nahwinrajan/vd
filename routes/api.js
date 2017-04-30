@@ -4,13 +4,21 @@ var router = express.Router();
 // variables - models
 var objModel = require("./../models/object");
 
+/*
+  when designing API, we should return a consistent result and a way for the other party
+  to know if something went wrong.
+
+  therefor I'm wrapping my response inside JSON object with extra fields instead of just returning the value of
+  search key like the requirement.
+*/
+
 router.post('/', function(req, res, next) {
   let parcel = req.body;
   let keyname = "";
   let val = "";
 
   let result = {
-    code: "200",
+    code: "",
     message: "",
     data: null
   }
@@ -21,7 +29,10 @@ router.post('/', function(req, res, next) {
       message: "invalid parameters",
       data: null
     }
-    res.status = 400;
+    res.status(400);
+    res.setHeader("Content-Type", "application/json");
+    res.send(JSON.stringify(result));
+    return
   } else {
     Object.keys(parcel).forEach(function(key, index){
       // keep it simple for the moment, only take first key on each request
@@ -32,6 +43,18 @@ router.post('/', function(req, res, next) {
         parcel = null;
       }
     });
+
+    if (val == undefined || val == "") {
+      result = {
+        code: "400",
+        message: "invalid parameters",
+        data: null
+      }
+      res.status(400);
+      res.setHeader("Content-Type", "application/json");
+      res.send(JSON.stringify(result));
+      return
+    }
 
     objModel.create({
       "objKey": keyname,
@@ -44,20 +67,20 @@ router.post('/', function(req, res, next) {
           message: "something went wrong in our server; please try again",
           data: null
         }
-        res.status = 500;
+        res.status(500);
       } else {
         result = {
           code: "200",
           message: "",
           data: data
         }
-        res.status = 200;
+        res.status(200);
       }
+
+      res.setHeader("Content-Type", "application/json");
+      res.send(JSON.stringify(result));
     });
   }
-
-  res.setHeader("Content-Type", "application/json");
-  res.send(JSON.stringify(result));
 });
 
 router.get('/:key', function(req, res, next) {
@@ -76,10 +99,11 @@ router.get('/:key', function(req, res, next) {
       message: "invalid parameters",
       data: null
     };
-    res.status = 400;
+    res.status(400);
 
     res.setHeader("Content-Type", "application/json");
     res.send(JSON.stringify(result));
+    return
   } else if (t !== undefined && t !== "") {
     objModel.findByKeyWithTimestamp(k, t, (err, data) => {
       if (err) {
@@ -89,14 +113,14 @@ router.get('/:key', function(req, res, next) {
           message: err,
           data: null
         };
-        res.status = 500;
+        res.status(500);
       } else {
         result = {
           code: "200",
           message: "",
           data: data
         };
-        res.status = 200;
+        res.status(200);
       }
 
       res.setHeader("Content-Type", "application/json");
@@ -111,7 +135,7 @@ router.get('/:key', function(req, res, next) {
           message: "invalid parameters",
           data: null
         };
-        res.status = 400;
+        res.status(400);
       } else {
         console.log("find result: ", data);
         result = {
@@ -121,11 +145,12 @@ router.get('/:key', function(req, res, next) {
             value: data[0].objValue
           }
         };
-        res.status = 200;
+        res.status(200);
       }
 
       res.setHeader("Content-Type", "application/json");
       res.send(JSON.stringify(result));
+      return
     });
   }
 });
