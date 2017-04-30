@@ -11,7 +11,8 @@ var favicon           = require("serve-favicon");
 var helmet            = require("helmet");
 var csrf              = require("csurf");
 var morgan            = require("morgan");
-var methodOverride  = require('method-override');
+var methodOverride    = require('method-override');
+var mongoose          = require('mongoose');
 
 // routes
 var indexRoutes    = require("./routes/index");
@@ -35,6 +36,9 @@ app.use(methodOverride('_method'));
 app.use(expressValidator());
 app.use(expressSanitizer()); //sanitize user's html encoding inputpr
 
+// db - configuration
+let dbUrl = process.env.MLAB_VD_URL || "mongodb://localhost/vd-test";
+mongoose.connect(dbUrl);
 
 app.use('/',       indexRoutes);
 app.use('/object', apiRoutes);
