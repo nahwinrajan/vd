@@ -137,12 +137,11 @@ router.get('/:key', function(req, res, next) {
         };
         res.status(400);
       } else {
-        console.log("find result: ", data);
         result = {
           code: "200",
           message: "",
           data: {
-            value: data[0].objValue
+            value: (data.length > 0) ? data[0].objValue : null
           }
         };
         res.status(200);
